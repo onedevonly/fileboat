@@ -30,18 +30,6 @@ jobs:
             goarch: arm
             ext: ""
             archive: tar.gz
-          - goos: linux
-            goarch: ppc64le
-            ext: ""
-            archive: tar.gz
-          - goos: linux
-            goarch: s390x
-            ext: ""
-            archive: tar.gz
-          - goos: linux
-            goarch: riscv64
-            ext: ""
-            archive: tar.gz
           - goos: darwin
             goarch: amd64
             ext: ""
@@ -62,22 +50,6 @@ jobs:
             goarch: amd64
             ext: ""
             archive: tar.gz
-          - goos: openbsd
-            goarch: amd64
-            ext: ""
-            archive: tar.gz
-          - goos: netbsd
-            goarch: amd64
-            ext: ""
-            archive: tar.gz
-          - goos: dragonfly
-            goarch: amd64
-            ext: ""
-            archive: tar.gz
-          - goos: solaris
-            goarch: amd64
-            ext: ""
-            archive: tar.gz
     env:
       CGO_ENABLED: "0"
     steps:
@@ -89,7 +61,14 @@ jobs:
         with:
           go-version: '1.21'
 
-      - name: build
+      - name: prepare modules
+        run: |
+          if [ ! -f go.mod ]; then
+            go mod init fileboat
+          fi
+          go mod tidy
+
+      - name: build and package
         run: |
           mkdir -p dist
           BIN=fileboat-${{ matrix.goos }}-${{ matrix.goarch }}${{ matrix.ext }}
