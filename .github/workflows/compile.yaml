@@ -50,14 +50,14 @@ jobs:
             goarch: amd64
             ext: ""
             archive: tar.gz
+
     env:
       CGO_ENABLED: "0"
-    steps:
-      - name: checkout
-        uses: actions/checkout@v4
 
-      - name: setup go
-        uses: actions/setup-go@v4
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-go@v4
         with:
           go-version: '1.21'
 
@@ -72,7 +72,7 @@ jobs:
         run: |
           mkdir -p dist
           BIN=fileboat-${{ matrix.goos }}-${{ matrix.goarch }}${{ matrix.ext }}
-          GOOS=${{ matrix.goos }} GOARCH=${{ matrix.goarch }} go build -trimpath -ldflags="-s -w" -o dist/${BIN} ./cmd/fileboat
+          GOOS=${{ matrix.goos }} GOARCH=${{ matrix.goarch }} go build -trimpath -ldflags="-s -w" -o dist/${BIN} .
           if [ "${{ matrix.archive }}" = "zip" ]; then
             cd dist
             zip -9 ${BIN}.zip ${BIN}
@@ -85,8 +85,7 @@ jobs:
             cd -
           fi
 
-      - name: upload artifact
-        uses: actions/upload-artifact@v4
+      - uses: actions/upload-artifact@v4
         with:
           name: fileboat-${{ matrix.goos }}-${{ matrix.goarch }}
-          path: dist/**
+          path: 
