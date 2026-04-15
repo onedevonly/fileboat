@@ -1,0 +1,113 @@
+name: Compile
+
+on:
+  workflow_dispatch:
+  pull_request:
+  push:
+    branches:
+    - main
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    strategy:
+      fail-fast: false
+      matrix:
+        include:
+          - goos: linux
+            goarch: amd64
+            ext: ""
+            archive: tar.gz
+          - goos: linux
+            goarch: 386
+            ext: ""
+            archive: tar.gz
+          - goos: linux
+            goarch: arm64
+            ext: ""
+            archive: tar.gz
+          - goos: linux
+            goarch: arm
+            ext: ""
+            archive: tar.gz
+          - goos: linux
+            goarch: ppc64le
+            ext: ""
+            archive: tar.gz
+          - goos: linux
+            goarch: s390x
+            ext: ""
+            archive: tar.gz
+          - goos: linux
+            goarch: riscv64
+            ext: ""
+            archive: tar.gz
+          - goos: darwin
+            goarch: amd64
+            ext: ""
+            archive: tar.gz
+          - goos: darwin
+            goarch: arm64
+            ext: ""
+            archive: tar.gz
+          - goos: windows
+            goarch: amd64
+            ext: .exe
+            archive: zip
+          - goos: windows
+            goarch: 386
+            ext: .exe
+            archive: zip
+          - goos: freebsd
+            goarch: amd64
+            ext: ""
+            archive: tar.gz
+          - goos: openbsd
+            goarch: amd64
+            ext: ""
+            archive: tar.gz
+          - goos: netbsd
+            goarch: amd64
+            ext: ""
+            archive: tar.gz
+          - goos: dragonfly
+            goarch: amd64
+            ext: ""
+            archive: tar.gz
+          - goos: solaris
+            goarch: amd64
+            ext: ""
+            archive: tar.gz
+    env:
+      CGO_ENABLED: "0"
+    steps:
+      - name: checkout
+        uses: actions/checkout@v4
+
+      - name: setup go
+        uses: actions/setup-go@v4
+        with:
+          go-version: '1.21'
+
+      - name: build
+        run: |
+          mkdir -p dist
+          BIN=fileboat-${{ matrix.goos }}-${{ matrix.goarch }}${{ matrix.ext }}
+          GOOS=${{ matrix.goos }} GOARCH=${{ matrix.goarch }} go build -trimpath -ldflags="-s -w" -o dist/${BIN} ./cmd/fileboat
+          if [ "${{ matrix.archive }}" = "zip" ]; then
+            cd dist
+            zip -9 ${BIN}.zip ${BIN}
+            rm ${BIN}
+            cd -
+          else
+            cd dist
+            tar -czf ${BIN}.tar.gz ${BIN}
+            rm ${BIN}
+            cd -
+          fi
+
+      - name: upload artifact
+        uses: actions/upload-artifact@v4
+        with:
+          name: fileboat-${{ matrix.goos }}-${{ matrix.goarch }}
+          path: dist/**
