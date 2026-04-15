@@ -88,4 +88,4 @@ jobs:
       - uses: actions/upload-artifact@v4
         with:
           name: fileboat-${{ matrix.goos }}-${{ matrix.goarch }}
-          path: 
+          path: dist/fileboat-${{ matrix.goos }}-${{ matrix.goarch }}${{ matrix.ext }}.${{ matrix.archive }}
